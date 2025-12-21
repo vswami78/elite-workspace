@@ -1,0 +1,37 @@
+# OS/User specific
+.bash_history
+.bashrc
+.bash_env
+.cache/
+.cargo/
+.config/
+.lesshst
+.local/
+.motd_shown
+.npm/
+.oh-my-zsh/
+.profile
+.rustup/
+.ssh/
+.sudo_as_admin_successful
+.viminfo
+.zcompdump*
+.zsh_history
+.zshenv
+.zshrc*
+.antigravity-server/
+.bun/
+.gemini/
+.claude.json*
+.claude/
+.codex/
+.opencode/
+.pi/
+.streamlit/
+
+# Beads DB (the JSONL files in .beads/ are usually committed, but not the sqlite .db)
+.beads/*.db
+
+# Temporary/Swoop files
+*.swo
+*.swp

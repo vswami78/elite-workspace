@@ -8,12 +8,20 @@ This document defines the unified engineering standards for all projects in this
 - **Fail Fast:** If a condition is met that should never happen, the system should crash immediately (Assertions).
 - **Static > Dynamic:** Prefer compile-time checks and static allocations over runtime complexity.
 - **No Magic:** Avoid abstractions that obscure what is actually happening.
+- **Hardware-Level Integrity:** Never rely solely on application-level validation. Enforce critical invariants (like enum ranges and required fields) at the storage layer using `CHECK` constraints and `NOT NULL` directives.
+
+## 💾 DATA LAYER STANDARDS
+- **Raw SQL + Pydantic (The "Contract" Pattern):** Avoid ORM "magic" for core business entities. Use explicit Raw SQL for data access to ensure transparency and hardware efficiency. Parse all results into Pydantic models at the repository boundary to ensure type safety.
+- **Stateless Functional Repositories:** Repositories must be collections of pure functions, not classes. They should take a database connection/session as an argument and return data structures, maintaining zero internal state.
+- **Integer Enums:** Store enums as integers in the database for performance, storage efficiency, and cross-language compatibility. Provide human-readable labels only at the presentation layer.
 
 ## 🧠 THE ARCHITECTURAL PHILOSOPHY: Dr. John Ousterhout
 - **Fight Complexity:** Complexity is anything that makes it hard to understand or modify the system.
 - **Deep Modules:** Interfaces should be simple; implementations can be complex but must be hidden.
 - **Strategic vs. Tactical:** Invest time now to create a better design; never "hack it in" to save time.
 - **Code Review:** Adhere to [Ousterhout's Review Codes](https://web.stanford.edu/~ouster/cgi-bin/cs190-spring16/reviewCodes.php).
+- **Transaction Ownership (Unit of Work):** Repositories must never control transaction boundaries (e.g., calling `commit()`). They should only `flush()` changes. The ownership of the transaction (`commit`/`rollback`) belongs exclusively to the Orchestrator or Service layer to ensure atomicity across multiple side-effects.
+- **Boundary Guardians:** All system boundaries (API inputs, File IO, Environment Config) must be guarded by static validation models (e.g., Pydantic). Fail fast at the edge to keep the "Deep Module" core pristine and type-safe.
 
 ## 🚀 PERFORMANCE & EFFICIENCY: Dean & Ghemawat
 - **Respect the Hardware:** Follow [Abseil Efficiency Hints](https://abseil.io/fast/hints.html).
@@ -27,6 +35,7 @@ This document defines the unified engineering standards for all projects in this
 - **PRD Lock Requires Artifact:** The statement "PRD locked" is only valid if a PRD document exists and includes problem statement, users, non-goals, authority semantics, and success criteria.
 - **Uncertainty Blocks Semantics:** If the user is unsure about a core semantic decision, the agent must not propose a specific value as a baseline; it must ask for a choice among alternatives.
 - **Tracer Bullets:** Use `_spikes/` only for disposable experiments that resolve exactly one unknown blocking a PRD decision. This code is radioactive (no imports or copying to/from `src/` or `lib/`), must produce a documented PRD update, and must be deleted or archived before "PRD locked" and any clean implementation begins.
+- **The Systemic Sweep:** Any task involving a cross-cutting concern (e.g., Time, Logging, Error Handling) requires a mandatory workspace-wide discovery (`grep`) before implementation. This ensures the fix is **Strategic** (system-wide) rather than **Tactical** (local).
 - **Task Orchestration:** Every task must be a Bead (`bd`).
 - **Git Guardrails:** Always use `zagi` for git operations. This ensures prompts are logged and commits follow strict guardrails.
 - **Environment:** All Python work must use `uv`.

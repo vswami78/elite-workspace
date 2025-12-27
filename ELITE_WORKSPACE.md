@@ -15,10 +15,16 @@ This document defines the unified engineering standards for all projects in this
 - **Stateless Functional Repositories:** Repositories must be collections of pure functions, not classes. They should take a database connection/session as an argument and return data structures, maintaining zero internal state.
 - **Integer Enums:** Store enums as integers in the database for performance, storage efficiency, and cross-language compatibility. Provide human-readable labels only at the presentation layer.
 
-## 🧠 THE ARCHITECTURAL PHILOSOPHY: Dr. John Ousterhout
+## 🧠 THE ARCHITECTURAL PHILOSOPHY: Dr. John Ousterhout & David Parnas
 - **Fight Complexity:** Complexity is anything that makes it hard to understand or modify the system.
 - **Deep Modules:** Interfaces should be simple; implementations can be complex but must be hidden.
 - **Strategic vs. Tactical:** Invest time now to create a better design; never "hack it in" to save time.
+- **The Parnasian Audit:** Every module must be subjected to the following questions *during the architectural review phase*:
+    1. What design decision does this module hide? (If none, why does the module exist?)
+    2. Where else is this decision assumed or duplicated? (Who else “knows” this fact?)
+    3. If this decision changes, how many files must change? (One is good. Many is a design failure.)
+    4. Can this feature be removed without breaking unrelated code? (Does the system shrink cleanly?)
+    5. Is this module structured around change, or around execution flow? (Volatility vs pipeline thinking.)
 - **Code Review:** Adhere to [Ousterhout's Review Codes](https://web.stanford.edu/~ouster/cgi-bin/cs190-spring16/reviewCodes.php).
 - **Transaction Ownership (Unit of Work):** Repositories must never control transaction boundaries (e.g., calling `commit()`). They should only `flush()` changes. The ownership of the transaction (`commit`/`rollback`) belongs exclusively to the Orchestrator or Service layer to ensure atomicity across multiple side-effects.
 - **Boundary Guardians:** All system boundaries (API inputs, File IO, Environment Config) must be guarded by static validation models (e.g., Pydantic). Fail fast at the edge to keep the "Deep Module" core pristine and type-safe.
@@ -30,7 +36,8 @@ This document defines the unified engineering standards for all projects in this
 
 ## 🛠 THE WORKFLOW: Harper Reed, Beads & Zagi
 - **One Question at a Time:** The agent must ask exactly one question to move the design forward. No guessing.
-- **PRD First:** No code is written until a PRD/Spec is agreed upon. The agent is the steward of clarity; even if the user says "Go ahead and implement," the agent must continue questioning if any part of the specification remains fuzzy or non-deterministic.
+- **PRD First:** No code is written until a PRD/Spec is agreed upon. The agent is the steward of clarity.
+- **Parnasian Mandatory:** The "Parnasian Audit" must be performed and documented in the PRD or Design Spec before any implementation begins.
 - **PRD Lock Is Explicit:** A PRD is not considered agreed upon until the user explicitly states "PRD locked". The agent must not close PRD/Definition Beads or begin implementation without this explicit confirmation.
 - **PRD Lock Requires Artifact:** The statement "PRD locked" is only valid if a PRD document exists and includes problem statement, users, non-goals, authority semantics, and success criteria.
 - **Uncertainty Blocks Semantics:** If the user is unsure about a core semantic decision, the agent must not propose a specific value as a baseline; it must ask for a choice among alternatives.
